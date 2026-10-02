@@ -3,14 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const button = document.getElementById('lookupBtn');
   const result = document.getElementById('lookupResult');
 
-  button.addEventListener('click', () => {
-    // lookup logic goes here
-  });
-});
-
-button.addEventListener('click', async () => {
+  button.addEventListener('click', async () => {
     const id = input.value;
-
     if (!id) {
       result.textContent = 'Enter an order ID first.';
       return;
@@ -33,3 +27,4 @@ button.addEventListener('click', async () => {
       result.textContent = 'Something went wrong. Try again.';
     }
   });
+});

@@ -1,16 +1,14 @@
 const db = require('../config/db');
 
-exports.createOrder = (menuItemId, price) => {
+exports.createOrder = (menuItemId, price, customerId) => {
   return db.tx(async (t) => {
-    // FIX: Combined into a single line to fix the single-quote syntax error
     const order = await t.one(
-      'INSERT INTO orders (menu_item_id, quantity, price_at_order) VALUES (\$1, 1, \$2) RETURNING *',
-      [menuItemId, price]
+      'INSERT INTO orders (menu_item_id, quantity, price_at_order, customer_id) VALUES ($1, 1, $2, $3) RETURNING *',
+      [menuItemId, price, customerId]
     );
 
-    // FIX: Combined into a single line to fix the single-quote syntax error
     await t.none(
-      'UPDATE menu_items SET times_ordered = times_ordered + 1 WHERE id = \$1', 
+      'UPDATE menu_items SET times_ordered = times_ordered + 1 WHERE id = $1',
       [menuItemId]
     );
 
@@ -29,25 +27,33 @@ exports.getOrderById = (id) => {
 };
 
 exports.updateQuantity = (id, quantity) => {
- return db.one('UPDATE orders SET quantity = $1 WHERE id = $2 RETURNING *',
-[quantity, id]);
+  return db.one(
+    'UPDATE orders SET quantity = $1 WHERE id = $2 RETURNING *',
+    [quantity, id]
+  );
 };
+
 exports.cancelOrder = (id) => {
- return db.none('DELETE FROM orders WHERE id = $1', [id]);
+  return db.none(
+    'DELETE FROM orders WHERE id = $1',
+    [id]
+  );
 };
+
 exports.getStats = () => {
- return db.one(`
- SELECT COUNT(*) AS total_orders,
- COALESCE(SUM(price_at_order * quantity), 0) AS total_revenue
- FROM orders
- `);
+  return db.one(`
+    SELECT COUNT(*) AS total_orders,
+    COALESCE(SUM(price_at_order * quantity), 0) AS total_revenue
+    FROM orders
+  `);
 };
+
 exports.getPopularItems = () => {
- return db.any(`
- SELECT name, times_ordered
- FROM menu_items
- WHERE times_ordered > 0
- ORDER BY times_ordered DESC
- LIMIT 3
- `);
+  return db.any(`
+    SELECT name, times_ordered
+    FROM menu_items
+    WHERE times_ordered > 0
+    ORDER BY times_ordered DESC
+    LIMIT 3
+  `);
 };
